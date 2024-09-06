@@ -1,8 +1,5 @@
 { modulesPath, config, lib, pkgs, ... }:
 let
-  #TODO: provide this IP 
-  tailscaleAuthKeyFile = config.sops.secrets.tailscale_auth_key.path;
-  tailscaleIP = config.sops.secrets.tailscale_ip;
 
   # User variables
   USER_NAME = "dylan";
@@ -63,13 +60,18 @@ in {
       AuthenticationMethods = "publickey";
       UsePAM = false;
     };
-#NOTE: i need 10 for my ssh agent to work on all my servers
+#NOTE: i need mazauth try set to 10 for my ssh agent to work on all my servers
+# still using default ssh port for now
     extraConfig = ''
       AllowUsers ${USER_NAME}
       PubkeyAuthentication yes
       AllowTcpForwarding no
       AllowAgentForwarding no
       MaxAuthTries 10
+      ClientAliveCountMax 2
+      MaxSessions 2
+      # Port 2222  # Choose a different non-standard port
+      TCPKeepAlive no
     '';
   };
 
@@ -89,12 +91,9 @@ in {
    programs.bash = {
     enable = true;
     shellAliases = {
-      # Neovim alias
       n = "nvim";
       y = "yazi";
-      # Lazydocker alias
       lg = "lazydocker";
-      # Docker Compose alias
       dc = "docker compose";
       dcu = "docker compose up -d";
       dcd = "docker compose down";
@@ -104,10 +103,6 @@ in {
   virtualisation.docker = {
     enable = true;
     enableOnBoot = true;
-    # rootless = {
-    #   # enable = true;
-    #   setSocketVariable = true;
-    # };
   };
   users.users.${USER_NAME} = {
     isNormalUser = true;
@@ -124,6 +119,7 @@ in {
       openFirewall = true;
       interfaceName = "tailscale0";
       # authKeyFile = tailscaleAuthKeyFile;
+      # TEST: does these auto tag still work?
       extraUpFlags = [
         "--hostname=${config.networking.hostName}"
         "--advertise-tags=tag:nixos,tag:server"
@@ -137,16 +133,6 @@ in {
         trustedInterfaces = [ "tailscale0" ];
         allowedTCPPorts = [ 22 ];
       };
-      # interfaces.tailscale0.ipv4.addresses = [{
-      #   address = cfg.settings.tailscaleIP;
-      #   prefixLength = 32;
-      # }];
-
-    # Replace the warning with an assertion
-    # assertions = [{
-    #   assertion = cfg.settings.tailscale.enable -> config.sops.secrets.tailscale_auth_key.path != null;
-    #   message = "Tailscale is enabled but the auth key secret is not defined in sops. Please ensure 'tailscale_auth_key' is properly configured in your sops secrets.";
-    # }];
   };
   # Now set up the activation scripts
   system.activationScripts = {
