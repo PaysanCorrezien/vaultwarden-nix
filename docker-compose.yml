@@ -4,7 +4,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - TZ=Europe/Paris
+      - TZ=${TZ}
       - WATCHTOWER_SCHEDULE=0 *  *# Checks every hour
       - WATCHTOWER_NOTIFICATIONS=shoutrrr
       - WATCHTOWER_NOTIFICATION_URL=${DISCORD_URL}
