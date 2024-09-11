@@ -31,13 +31,12 @@ in {
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+#HACK: this allow to rebuild to remote host without creating a sign key, ssh is enough for me
   nix.settings = {
     accept-flake-config = true;
     require-sigs = false;
   };
   boot.loader.grub = {
-    # no need to set devices, disko will add all devices that have a EF02 partition to the list already
-    # devices = [ ];
     efiSupport = true;
     efiInstallAsRemovable = true;
   };
@@ -87,13 +86,13 @@ in {
     pkgs.lazydocker
     pkgs.tailscale
     pkgs.lazydocker
+    pkgs.lynis # security scanner : sudo lynis audit system
   ];
    programs.bash = {
-    enable = true;
     shellAliases = {
       n = "nvim";
       y = "yazi";
-      lg = "lazydocker";
+      ld = "lazydocker";
       dc = "docker compose";
       dcu = "docker compose up -d";
       dcd = "docker compose down";
@@ -141,7 +140,8 @@ in {
         # Create waf directories
         mkdir -p ${USER_HOME}/waf/log ${USER_HOME}/waf/rules
         chown -R ${USER_NAME}:${USER_NAME} ${USER_HOME}/waf
-        chmod 775 ${USER_HOME}/waf ${USER_HOME}/waf/log ${USER_HOME}/waf/rules
+        #FIXME: i cant make fail2ban work with logfolder in my home user , and we neeed to create the log file manually
+        touch /var/log/modsec_error.log
 
         # Create docker directory
         mkdir -p ${DOCKER_PATH}
