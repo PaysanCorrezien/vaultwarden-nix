@@ -1,4 +1,4 @@
-g 🔐 Vaultwarden NixOS Configuration
+🔐 Vaultwarden NixOS Configuration
 
 ## 🤔 What is this?
 
